@@ -2,12 +2,13 @@
 
 version = "0.0.1"
 author = "Lyndsey Dickson"
-description = "A sample nimx app"
+description = "A tracker for DND campaigns"
 license = "MIT"
 
-bin = @["hello"]
+bin = @["dndtracker"]
 
 # Dependencies
 
-requires "nimx >= 0.1"
-
+requires "nim >= 1.6.6"
+requires "jester >= 0.5.0"
+requires "karax >= 1.2.2"

@@ -1,24 +1,15 @@
-import std/asynchttpserver
-import std/asyncdispatch
+import jester
+import karax / [karaxdsl, vdom]
 
-proc main {.async.} =
-  var httpServer = newAsyncHttpServer()
-  proc callBack(request: Request) {.async.} =
-    echo "Request Method: " & $request.reqMethod
-    echo "Request URL: " & $request.url
-    echo "Request Headers: " & $request.headers
-    let headers = {"content-type": "text/plain; charset=utf-8"}
-    await request.respond(Http200, "DND Power", headers.newHttpHeaders())
+template kxi(): int = 0
+template addEventHandler(n: VNode; k: EventKind; action: string; kxi: int) =
+  n.setAttr($k, action)
 
-  httpServer.listen(Port(8080))
-  let port = httpServer.getPort
-  echo "server started on port " & $port.uint16
-  while true:
-    if httpServer.shouldAcceptRequest():
-      await httpServer.acceptRequest(callBack)
-    else:
-      await sleepAsync(500)
+proc home: string =
+  let vnode = buildHtml(tdiv):
+    text "DND Power"
+  return $vnode
 
-if isMainModule:
-  waitFor main()
-
+routes:
+  get "/":
+    resp home
