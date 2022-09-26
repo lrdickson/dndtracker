@@ -1,15 +1,36 @@
-import jester
-import karax / [karaxdsl, vdom]
+import std / htmlgen
 
-template kxi(): int = 0
-template addEventHandler(n: VNode; k: EventKind; action: string; kxi: int) =
-  n.setAttr($k, action)
+import jester
+
+proc addTemplate(bodyHtml, pageTitle: string): string =
+  let page = html(
+    head(
+      title(pageTitle)),
+    body(bodyHtml))
+  return page
+
+proc addTemplate(bodyHtml: string): string =
+  return bodyHtml.addTemplate("DND Tracker")
 
 proc home: string =
-  let vnode = buildHtml(tdiv):
-    text "DND Power"
-  return $vnode
+  let page = h1("DND Power").addTemplate
+  return page
+
+proc login: string =
+  let page = `div`(
+    `div`(
+      label("Username:"),
+      input(placeholder="Enter Username", name="username")),
+    `div`(
+      label("Password:"),
+      input(type="password", placeholder="Enter Password", name="username")),
+  ).addTemplate("Login")
+  return page
 
 routes:
   get "/":
-    resp home
+    resp home()
+  get "/login":
+    resp login()
+  get "/login/":
+    resp login()
