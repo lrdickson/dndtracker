@@ -5,7 +5,8 @@ import jester
 proc addTemplate(bodyHtml, pageTitle: string): string =
   let page = html(
     head(
-      title(pageTitle)),
+      title(pageTitle),
+      style("")),
     body(bodyHtml))
   return page
 
@@ -16,21 +17,33 @@ proc home: string =
   let page = h1("DND Power").addTemplate
   return page
 
-proc login: string =
-  let page = `div`(
+proc loginView: string =
+  let page = form(action="/login", `method`="post", enctype="multipart/form-data",
     `div`(
       label("Username:"),
+      br(),
       input(placeholder="Enter Username", name="username")),
     `div`(
       label("Password:"),
-      input(type="password", placeholder="Enter Password", name="username")),
+      br(),
+      input(type="password", placeholder="Enter Password", name="password")),
+    `div`(button(type="submit","Login"))
   ).addTemplate("Login")
   return page
+
+proc loginPost(request: Request): Future[string] {.async.} =
+  let username = request.formData.getOrDefault("username").body
+  let password = request.formData.getOrDefault("password").body
+  return "Username: " & username & "\nPassword: " & password
 
 routes:
   get "/":
     resp home()
   get "/login":
-    resp login()
+    resp loginView()
   get "/login/":
-    resp login()
+    resp loginView()
+  post "/login":
+    resp await loginPost(request)
+  post "/login/":
+    resp await loginPost(request)
