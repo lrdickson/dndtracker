@@ -13,37 +13,50 @@ proc addTemplate(bodyHtml, pageTitle: string): string =
 proc addTemplate(bodyHtml: string): string =
   return bodyHtml.addTemplate("DND Tracker")
 
-proc home: string =
-  let page = h1("DND Power").addTemplate
+proc home(request: Request): Future[string] {.async.} =
+  let session = request.cookies.getOrDefault("session")
+  let page = `div`(
+    p("Session: " & session),
+    br(),
+    a(href="/login", "login"),
+    br(),
+    h1("DND Power")).addTemplate
   return page
 
 proc loginView: string =
   let page = form(action="/login", `method`="post", enctype="multipart/form-data",
-    `div`(
-      label("Username:"),
-      br(),
-      input(placeholder="Enter Username", name="username")),
-    `div`(
-      label("Password:"),
-      br(),
-      input(type="password", placeholder="Enter Password", name="password")),
-    `div`(button(type="submit","Login"))
+    label("Username:"),br(),
+    input(placeholder="Enter Username", name="username"),br(),
+    label("Password:"),br(),
+    input(type="password", placeholder="Enter Password", name="password"),br(),
+    button(type="submit","Login")
   ).addTemplate("Login")
   return page
 
-proc loginPost(request: Request): Future[string] {.async.} =
+proc loginPost(request: Request): Future[bool] {.async.} =
   let username = request.formData.getOrDefault("username").body
   let password = request.formData.getOrDefault("password").body
-  return "Username: " & username & "\nPassword: " & password
+
+  # Authenticate the user
+  var validCredentials: bool
+  case username
+  of "a":
+    validCredentials = password == "a"
+  else:
+    validCredentials = false
+
+  return validCredentials
 
 routes:
   get "/":
-    resp home()
+    resp await home(request)
   get "/login":
     resp loginView()
-  get "/login/":
-    resp loginView()
   post "/login":
-    resp await loginPost(request)
-  post "/login/":
-    resp await loginPost(request)
+    # Check the credentials
+    let validCredentials = await loginPost(request)
+    if not validCredentials:
+      resp "incorrect username or password"
+
+    setCookie("session", "1", daysForward(1))
+    redirect("/")
