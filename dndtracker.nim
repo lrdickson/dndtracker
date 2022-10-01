@@ -2,6 +2,9 @@ import std / htmlgen
 
 import jester
 
+const MAIN_VIEW_HTML = staticRead("mainview.html")
+const MAIN_VIEW_JS = staticRead("mainview.js")
+
 proc addTemplate(bodyHtml, pageTitle: string): string =
   let page = html(
     head(
@@ -18,7 +21,7 @@ proc home(request: Request): Future[string] {.async.} =
   let page = `div`(
     p("Session: " & session),
     br(),
-    a(href="/login", "login"),
+    a(href="/logout", "logout"),
     br(),
     h1("DND Power")).addTemplate
   return page
@@ -49,7 +52,10 @@ proc loginPost(request: Request): Future[bool] {.async.} =
 
 routes:
   get "/":
-    resp await home(request)
+    let session = request.cookies.getOrDefault("session")
+    if session == "":
+      redirect "/login"
+    resp MAIN_VIEW_HTML
   get "/login":
     resp loginView()
   post "/login":
@@ -60,3 +66,8 @@ routes:
 
     setCookie("session", "1", daysForward(1))
     redirect("/")
+  get "/logout":
+    setCookie("session", "", daysForward(1))
+    redirect("/login")
+  get "/static/mainview.js":
+    resp MAIN_VIEW_JS
