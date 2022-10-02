@@ -1,3 +1,4 @@
 tags
 **/*.js
-dndtracker
+**/dndtracker
+**/*.db
