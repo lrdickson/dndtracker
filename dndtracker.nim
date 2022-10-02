@@ -2,7 +2,7 @@ from std / htmlgen import nil
 
 import jester
 
-import model
+import dndtracker / model
 
 proc createView(viewJs, pageTitle: string): string =
   let page = htmlgen.html(
@@ -31,8 +31,8 @@ proc loginPost(request: Request): Future[bool] {.async.} =
 
   return checkPassword(username, password)
 
-const MAIN_VIEW_JS = staticRead("static/mainview.js")
-const LOGIN_VIEW_JS = staticRead("static/loginview.js")
+const MAIN_VIEW_JS = staticRead("js/mainview.js")
+const LOGIN_VIEW_JS = staticRead("js/loginview.js")
 
 checkdb()
 
@@ -41,9 +41,9 @@ routes:
     let session = request.cookies.getOrDefault("session")
     if session == "":
       redirect "/login"
-    resp createView("static/mainview.js")
+    resp createView("/static/mainview.js")
   get "/login":
-    resp createView("static/loginview.js", "Login")
+    resp createView("/static/loginview.js", "Login")
   post "/login":
     # Check the credentials
     let validCredentials = await loginPost(request)
