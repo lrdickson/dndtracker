@@ -1,8 +1,13 @@
+# Standard library
 from std / htmlgen import nil
+import std / os
 
+# 3rd party
 import jester
 
-import dndtracker / model
+# Internal
+import dndtracker / [ database, databaseinitializer ]
+import dndtracker / models / user
 
 proc createView(viewJs, pageTitle: string): string =
   let page = htmlgen.html(
@@ -31,10 +36,13 @@ proc loginPost(request: Request): Future[bool] {.async.} =
 
   return checkPassword(username, password)
 
+# Setup the database
+let dbNeedsInitialized = not fileExists(DB_FILEPATH)
+openDbConn()
+prepareDatabase(dbNeedsInitialized)
+
 const MAIN_VIEW_JS = staticRead("js/mainview.js")
 const LOGIN_VIEW_JS = staticRead("js/loginview.js")
-
-checkdb()
 
 routes:
   get "/":
