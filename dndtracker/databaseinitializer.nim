@@ -9,6 +9,7 @@ proc prepareDatabase*(dbNeedsInitialized: bool) =
   # Initialize the database if it hasn't been
   echo("Database needs initialized: " & $dbNeedsInitialized)
   if dbNeedsInitialized:
+      # Create the user table
       db.createTables(newUser())
       var admin = newUser("admin", "admin", "")
       db.insert(admin)
