@@ -13,3 +13,6 @@ proc prepareDatabase*(dbNeedsInitialized: bool) =
       db.createTables(newUser())
       var admin = newUser("admin", "admin", "")
       db.insert(admin)
+
+      # Create the session table
+      db.createTables(newSession())

@@ -19,17 +19,16 @@ type
     email*: string
 
 var randLock: Lock
-proc genSalt: string =
-  const saltLen = 10
-  const characters = [ '0'..'9', 'a'..'z' ]
-  var salt = ""
-  for i in 1..saltLen:
+proc randString(length: int): string =
+  const characters = [ '0'..'9', 'a'..'z', 'A'..'Z' ]
+  var str = ""
+  for i in 1..length:
     var characterIndex: int
     withLock(randLock):
       characterIndex = rand(len(characters) - 1)
     let randomChar = $characters[characterIndex]
-    salt = salt & randomChar
-  return salt
+    str = str & randomChar
+  return str
 
 proc getPasswordHash(password, salt: string): string =
   var hctx: HMAC[sha256]
@@ -41,7 +40,7 @@ proc getPasswordHash(password, salt: string): string =
   return encode(passwordHash)
 
 proc newUser*(name, password, email: string): User =
-  let salt = genSalt()
+  let salt = randString(10)
   let passwordHash = getPasswordHash(password, salt)
   User(name: name, password: passwordHash, salt: salt, email: email)
 
@@ -66,3 +65,19 @@ type
     identifier*: string
     expire*: DateTime
 
+proc newSession*(user: User): Session =
+  let identifier = randString(16)
+  let expire = now().utc + initDuration(minutes = 30)
+  return Session(user: user, identifier: identifier, expire: expire)
+
+proc newSession*: Session =
+  return Session(user: newUser(), identifier: "", expire: now().utc)
+
+proc beginSession*(user: User): (string, DateTime) =
+  # Add a session to the database
+  var session = newSession(user)
+  let db = getDatabase()
+  db.insert(session)
+
+  # Return the session identifier
+  return (session.identifier, session.expire)
