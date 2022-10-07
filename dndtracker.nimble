@@ -10,5 +10,8 @@ bin = @["dndtracker"]
 # Dependencies
 
 requires "nim >= 1.4.2"
+
 requires "jester >= 0.5.0"
 requires "karax >= 1.2.2"
+requires "nimcrypto >= 0.5.4"
+requires "norm >= 2.5.2"
