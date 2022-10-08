@@ -73,11 +73,31 @@ proc newSession*(user: User): Session =
 proc newSession*: Session =
   return Session(user: newUser(), identifier: "", expire: now().utc)
 
-proc beginSession*(user: User): (string, DateTime) =
+proc beginSession*(username, password: string): (string, DateTime)=
+  # Get the user
+  let db = getDatabase()
+  if not db.exists(User, "name = ?", username): return ("", now().utc)
+  var user = newUser()
+  getDatabase().select(user, "User.name = ?", username)
+
+  # Check if the password is correct
+  let passwordHash = getPasswordHash(password, user.salt)
+  if passwordHash != user.password:
+    return ("", now().utc)
+
   # Add a session to the database
   var session = newSession(user)
-  let db = getDatabase()
   db.insert(session)
-
-  # Return the session identifier
   return (session.identifier, session.expire)
+
+proc endSession*(sessionId: string) =
+  # Check if the session is still in the database
+  let db = getDatabase()
+  if not db.exists(Session, "identifier = ?", sessionId):
+    return
+
+  # Delete the session
+  var session = newSession()
+  db.select(session, "Session.identifier = ?", sessionId)
+  db.delete(session)
+
