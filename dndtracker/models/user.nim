@@ -58,6 +58,18 @@ proc checkPassword*(username, password: string): bool =
   let passwordHash = getPasswordHash(password, user.salt)
   return passwordHash == user.password
 
+# =================== Role ============================== #
+type
+  UserRole* = ref object of Model
+    user*: User
+    role*: int
+
+proc newUserRole*(user: User, role: int): UserRole =
+  return UserRole(user: user, role: role)
+
+proc newUserRole*: UserRole =
+  return UserRole(user: newUser(), role: 0)
+
 # =================== Session ============================== #
 type
   Session* = ref object of Model
@@ -100,4 +112,15 @@ proc endSession*(sessionId: string) =
   var session = newSession()
   db.select(session, "Session.identifier = ?", sessionId)
   db.delete(session)
+
+proc getSession*(sessionId: string): (bool, Session) =
+  # Check if the session is still in the database
+  let db = getDatabase()
+  if not db.exists(Session, "identifier = ?", sessionId):
+    return (false, newSession())
+
+  # Delete the session
+  var session = newSession()
+  db.select(session, "Session.identifier = ?", sessionId)
+  return (true, session)
 

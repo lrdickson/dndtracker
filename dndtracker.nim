@@ -1,7 +1,10 @@
 # Standard library
 from std / htmlgen import nil
-import std / os
-import std/times
+import std / [
+  json,
+  os,
+  times
+  ]
 
 # 3rd party
 import jester
@@ -73,3 +76,17 @@ routes:
     resp MAIN_VIEW_JS
   get "/static/loginview.js":
     resp LOGIN_VIEW_JS
+
+  get "/api/v1/userinfo":
+    # Get the session
+    let sessionId = request.cookies.getOrDefault("session")
+    let (sessionFound, session) = getSession(sessionId)
+    if not sessionFound:
+      let data = $(%*{"username": ""})
+      resp data, "application/json"
+
+    # Get the user information
+    let user = session.user
+    let data = $(%*{"username": user.name})
+    resp data, "application/json"
+
