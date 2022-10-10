@@ -2,6 +2,7 @@
 from std / htmlgen import nil
 import std / [
   json,
+  macros,
   os,
   times
   ]
@@ -12,6 +13,11 @@ import jester
 # Internal
 import dndtracker / [ database, databaseinitializer ]
 import dndtracker / models / user
+
+# Setup the database
+let dbNeedsInitialized = not fileExists(DB_FILEPATH)
+openDbConn()
+prepareDatabase(dbNeedsInitialized)
 
 proc createView(viewJs, pageTitle: string): string =
   let page = htmlgen.html(
@@ -31,13 +37,19 @@ proc createView(viewJs, pageTitle: string): string =
 proc createView(viewJs: string): string =
   return viewJs.createView("DND Tracker")
 
-# Setup the database
-let dbNeedsInitialized = not fileExists(DB_FILEPATH)
-openDbConn()
-prepareDatabase(dbNeedsInitialized)
-
 const MAIN_VIEW_JS = staticRead("js/mainview.js")
 const LOGIN_VIEW_JS = staticRead("js/loginview.js")
+
+macro getSessionUser(request, user) = quote do:
+    # Get the session
+    let sessionId = `request`.cookies.getOrDefault("session", "")
+    let (sessionFound, session) = getSession(sessionId)
+    if not sessionFound:
+      let data = $(%*{"status": "failed"})
+      resp Http401, data, "application/json"
+
+    # Get the user information
+    let `user` = session.user
 
 routes:
   get "/":
@@ -78,15 +90,22 @@ routes:
     resp LOGIN_VIEW_JS
 
   get "/api/v1/userinfo":
-    # Get the session
-    let sessionId = request.cookies.getOrDefault("session")
-    let (sessionFound, session) = getSession(sessionId)
-    if not sessionFound:
-      let data = $(%*{"username": ""})
-      resp data, "application/json"
+    getSessionUser(request, user)
 
-    # Get the user information
-    let user = session.user
+    # Return the user information
     let data = $(%*{"username": user.name})
     resp data, "application/json"
+
+  post "/api/v1/changepassword":
+    getSessionUser(request, user)
+
+    # Change the password
+    let password = request.formData.getOrDefault("password").body
+    let success = changePassword(user, password)
+    if not success:
+      let data = $(%*{"status": "error"})
+      resp Http500, data, "application/json"
+    else:
+      let data = $(%*{"status": "success"})
+      resp data, "application/json"
 

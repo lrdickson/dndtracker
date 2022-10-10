@@ -25,6 +25,7 @@ proc randString(length: int): string =
   for i in 1..length:
     var characterIndex: int
     withLock(randLock):
+      # TODO: replace with a better random number generator
       characterIndex = rand(len(characters) - 1)
     let randomChar = $characters[characterIndex]
     str = str & randomChar
@@ -32,6 +33,7 @@ proc randString(length: int): string =
 
 proc getPasswordHash(password, salt: string): string =
   var hctx: HMAC[sha256]
+  # TODO: move this into a settings file
   let secretKey = "SuperSecretKey"
   hctx.init(secretKey)
   var passwordHash: array[32, byte]
@@ -57,6 +59,21 @@ proc checkPassword*(username, password: string): bool =
   # Check if the password is correct
   let passwordHash = getPasswordHash(password, user.salt)
   return passwordHash == user.password
+
+proc changePassword*(username, password: string): bool =
+  # Get the user
+  let db = getDatabase()
+  if not db.exists(User, "name = ?", username): return false
+  var user = newUser()
+  getDatabase().select(user, "User.name = ?", username)
+
+  # Change the password
+  let newSalt = randString(10)
+  let passwordHash = getPasswordHash(password, newSalt)
+  user.password = passwordHash
+  user.salt = newSalt
+  db.update(user)
+  return true
 
 # =================== Role ============================== #
 type
