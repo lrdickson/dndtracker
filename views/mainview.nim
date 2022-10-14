@@ -1,16 +1,16 @@
 import std / json
 
 include karax / prelude
-import karax / [kajax, vstyles]
+import karax / [kajax, kdom, vstyles]
 
 #import std / [cookies, strtabs]
-#import karax / kdom
 #let cookieJar = parseCookies($document.cookie)
 
 var passwordChangeStatus: kstring = ""
+const passwordInputId = "passwordInput"
 var username: kstring = ""
 
-proc passwordChangeField(labelText, inputName, inputType: kstring): VNode =
+proc passwordChangeField(labelText, inputId, inputType: kstring): VNode =
   let labelStyle = style(
           (StyleAttr.display, cstring"inline-block"),
           (StyleAttr.width, cstring"100px"),
@@ -19,7 +19,7 @@ proc passwordChangeField(labelText, inputName, inputType: kstring): VNode =
   result = buildHtml(tdiv):
     tdiv(style=labelStyle):
       label: text labelText & ":"
-    input(name=inputName, type=inputType)
+    input(id=inputId, type=inputType)
 
 proc passwordChangeCb(httpStatus: int, response: cstring) =
   if httpStatus == 200:
@@ -28,7 +28,8 @@ proc passwordChangeCb(httpStatus: int, response: cstring) =
     passwordChangeStatus = "Failed to change the password"
 
 proc passwordChangeSubmit(ev: Event; n: VNode) =
-  discard
+  let password = document.getElementById(passwordInputId).value
+  ajaxPost("/api/v1/changepassword", @[], password, passwordChangeCb)
 
 proc createDom(): VNode =
   result = buildHtml(tdiv):
@@ -37,15 +38,14 @@ proc createDom(): VNode =
         text "Welcome " & username
     a(href="/logout"):
       text "logout"
-    h3:
+    h4:
       text "Change Password"
-    form:
-      passwordChangeField("Password", "password", "password")
-      tdiv:
-        button(type="submit", id="passwordChangeSubmit"): text "submit"
+    passwordChangeField("Password", passwordInputId, "password")
+    tdiv:
+      button(onclick=passwordChangeSubmit): text "submit"
+    tdiv: text passwordChangeStatus
 
-
-
+# Render the page
 setRenderer createDom
 
 # Get the user info

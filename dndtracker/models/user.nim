@@ -6,6 +6,7 @@ randomize()
 
 import nimcrypto
 import nimcrypto/pbkdf2
+import std/[logging, options]
 import norm/[model, sqlite]
 
 import ../database
@@ -60,6 +61,15 @@ proc checkPassword*(username, password: string): bool =
   let passwordHash = getPasswordHash(password, user.salt)
   return passwordHash == user.password
 
+proc changePassword*(user:var User, password: string): bool =
+  # Change the password
+  let newSalt = randString(10)
+  let passwordHash = getPasswordHash(password, newSalt)
+  user.password = passwordHash
+  user.salt = newSalt
+  getDatabase().update(user)
+  return true
+
 proc changePassword*(username, password: string): bool =
   # Get the user
   let db = getDatabase()
@@ -68,12 +78,7 @@ proc changePassword*(username, password: string): bool =
   getDatabase().select(user, "User.name = ?", username)
 
   # Change the password
-  let newSalt = randString(10)
-  let passwordHash = getPasswordHash(password, newSalt)
-  user.password = passwordHash
-  user.salt = newSalt
-  db.update(user)
-  return true
+  return changePassword(user, password)
 
 # =================== Role ============================== #
 type

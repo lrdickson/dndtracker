@@ -49,7 +49,7 @@ macro getSessionUser(request, user) = quote do:
       resp Http401, data, "application/json"
 
     # Get the user information
-    let `user` = session.user
+    var `user` = session.user
 
 routes:
   get "/":
@@ -100,7 +100,7 @@ routes:
     getSessionUser(request, user)
 
     # Change the password
-    let password = request.formData.getOrDefault("password").body
+    let password = request.body
     let success = changePassword(user, password)
     if not success:
       let data = $(%*{"status": "error"})
