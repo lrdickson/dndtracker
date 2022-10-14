@@ -39,23 +39,32 @@ proc createView(viewJs: string): string =
 
 const MAIN_VIEW_JS = staticRead("js/mainview.js")
 const LOGIN_VIEW_JS = staticRead("js/loginview.js")
+const USER_VIEW_JS = staticRead("js/userview.js")
+const SETTINGS_VIEW
+
+macro checkViewSession(request) = quote do:
+  let sessionId = `request`.cookies.getOrDefault("session", "")
+  let (sessionFound, session) = getSession(sessionId)
+  if not sessionFound:
+      redirect "/login"
 
 macro getSessionUser(request, user) = quote do:
-    # Get the session
-    let sessionId = `request`.cookies.getOrDefault("session", "")
-    let (sessionFound, session) = getSession(sessionId)
-    if not sessionFound:
-      let data = $(%*{"status": "failed"})
-      resp Http401, data, "application/json"
+  # Get the session
+  let sessionId = `request`.cookies.getOrDefault("session", "")
+  let (sessionFound, session) = getSession(sessionId)
+  if not sessionFound:
+    let data = $(%*{"status": "failed"})
+    resp Http401, data, "application/json"
 
-    # Get the user information
-    var `user` = session.user
+  # Get the user information
+  var `user` = session.user
 
 routes:
   get "/":
-    let session = request.cookies.getOrDefault("session")
-    if session == "":
-      redirect "/login"
+    checkViewSession(request)
+    resp createView("/static/mainview.js")
+  get "/settings":
+    checkViewSession(request)
     resp createView("/static/mainview.js")
 
   get "/login":
@@ -88,6 +97,8 @@ routes:
     resp MAIN_VIEW_JS
   get "/static/loginview.js":
     resp LOGIN_VIEW_JS
+  get "/static/userview.js":
+    resp USER_VIEW_JS
 
   get "/api/v1/userinfo":
     getSessionUser(request, user)

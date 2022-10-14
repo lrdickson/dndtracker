@@ -3,12 +3,13 @@ import std / json
 include karax / prelude
 import karax / [kajax, kdom, vstyles]
 
+import ../viewutils
+
 #import std / [cookies, strtabs]
 #let cookieJar = parseCookies($document.cookie)
 
 var passwordChangeStatus: kstring = ""
 const passwordInputId = "passwordInput"
-var username: kstring = ""
 
 proc passwordChangeField(labelText, inputId, inputType: kstring): VNode =
   let labelStyle = style(
@@ -33,11 +34,7 @@ proc passwordChangeSubmit(ev: Event; n: VNode) =
 
 proc createDom(): VNode =
   result = buildHtml(tdiv):
-    if username != "":
-      tdiv:
-        text "Welcome " & username
-    a(href="/logout"):
-      text "logout"
+    createViewHeader()
     h4:
       text "Change Password"
     passwordChangeField("Password", passwordInputId, "password")
@@ -48,10 +45,4 @@ proc createDom(): VNode =
 # Render the page
 setRenderer createDom
 
-# Get the user info
-proc userInfoUpdate(httpStatus: int, response: cstring) =
-  if httpStatus == 200:
-    let responseJson = parseJson($response)
-    username = kstring(responseJson["username"].getStr())
-ajaxGet("/api/v1/userinfo", @[], userInfoUpdate)
-
+initViewHeader()
