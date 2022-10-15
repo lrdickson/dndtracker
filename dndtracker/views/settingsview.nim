@@ -11,6 +11,8 @@ import ../viewutils
 var passwordChangeStatus: kstring = ""
 const passwordInputId = "passwordInput"
 
+let marginTopStyle = style((StyleAttr.marginTop, cstring"5px"))
+
 proc passwordChangeField(labelText, inputId, inputType: kstring): VNode =
   let labelStyle = style(
           (StyleAttr.display, cstring"inline-block"),
@@ -35,6 +37,8 @@ proc passwordChangeSubmit(ev: Event; n: VNode) =
 proc createDom(): VNode =
   result = buildHtml(tdiv):
     createViewHeader()
+    a(class="btn btn-primary", style=marginTopStyle, href="/"):
+      text "Main"
     h4:
       text "Change Password"
     passwordChangeField("Password", passwordInputId, "password")

@@ -29,7 +29,8 @@ proc createView(viewJs, pageTitle: string): string =
       ),
     htmlgen.body(id="body",
       htmlgen.`div`(id="ROOT"),
-      htmlgen.script(type="text/javascript", src=viewJs),
+      #htmlgen.script(type="text/javascript", src=viewJs),
+      htmlgen.script(viewJs),
       "<script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3\" crossorigin=\"anonymous\"></script>"
       ))
   return "<!doctype html>\n" & page
@@ -39,8 +40,7 @@ proc createView(viewJs: string): string =
 
 const MAIN_VIEW_JS = staticRead("js/mainview.js")
 const LOGIN_VIEW_JS = staticRead("js/loginview.js")
-const USER_VIEW_JS = staticRead("js/userview.js")
-const SETTINGS_VIEW
+const SETTINGS_VIEW_JS = staticRead("js/settingsview.js")
 
 macro checkViewSession(request) = quote do:
   let sessionId = `request`.cookies.getOrDefault("session", "")
@@ -62,13 +62,12 @@ macro getSessionUser(request, user) = quote do:
 routes:
   get "/":
     checkViewSession(request)
-    resp createView("/static/mainview.js")
+    resp createView(MAIN_VIEW_JS)
   get "/settings":
     checkViewSession(request)
-    resp createView("/static/mainview.js")
-
+    resp createView(SETTINGS_VIEW_JS)
   get "/login":
-    resp createView("/static/loginview.js", "Login")
+    resp createView(LOGIN_VIEW_JS, "Login")
 
   post "/login":
     # Login the user
@@ -92,13 +91,6 @@ routes:
     setCookie("session", "", now().utc)
     setCookie("username", "", now().utc)
     redirect("/login")
-
-  get "/static/mainview.js":
-    resp MAIN_VIEW_JS
-  get "/static/loginview.js":
-    resp LOGIN_VIEW_JS
-  get "/static/userview.js":
-    resp USER_VIEW_JS
 
   get "/api/v1/userinfo":
     getSessionUser(request, user)

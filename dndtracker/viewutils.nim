@@ -8,7 +8,7 @@ const welcomeId = "welcome"
 proc createViewHeader*(): VNode =
   result = buildHtml(tdiv):
     tdiv(id=welcomeId): text ""
-    a(href="/logout"):
+    a(class="btn btn-primary", href="/logout"):
       text "logout"
 
 proc initViewHeader*() =
