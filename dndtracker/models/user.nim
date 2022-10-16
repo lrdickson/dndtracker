@@ -50,6 +50,11 @@ proc newUser*(name, password, email: string): User =
 proc newUser*: User =
   newUser("", "", "")
 
+proc addUser*(username, password, email: string) =
+  let db = getDatabase()
+  var user = newUser(username, password, email)
+  db.insert(user)
+
 proc checkPassword*(username, password: string): bool =
   # Get the user
   let db = getDatabase()
@@ -91,6 +96,18 @@ proc newUserRole*(user: User, role: int): UserRole =
 
 proc newUserRole*: UserRole =
   return UserRole(user: newUser(), role: 0)
+
+proc getUserRoles*(user: User): seq[UserRole] =
+  var roles = @[newUserRole()]
+  let db = getDatabase()
+  db.selectOneToMany(user, roles)
+  return roles
+
+proc getUserRolesInt*(user: User): seq[int] =
+  var userRoles: seq[int] = @[]
+  for role in getUserRoles(user):
+    userRoles.add(role.role)
+  return userRoles
 
 # =================== Session ============================== #
 type

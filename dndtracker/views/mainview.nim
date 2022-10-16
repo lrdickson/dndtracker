@@ -12,11 +12,11 @@ let marginTopStyle = style((StyleAttr.marginTop, cstring"5px"))
 
 proc createDom(): VNode =
   result = buildHtml(tdiv):
-    createViewHeader()
+    createUserDisplay()
     a(class="btn btn-primary", style=marginTopStyle, href="/settings"):
       text "settings"
 
 # Render the page
 setRenderer createDom
 
-initViewHeader()
+initUserDisplay()

@@ -5,17 +5,17 @@ import karax / [kajax, kdom]
 
 const welcomeId = "welcome"
 
-proc createViewHeader*(): VNode =
+proc createUserDisplay*(): VNode =
   result = buildHtml(tdiv):
     tdiv(id=welcomeId): text ""
     a(class="btn btn-primary", href="/logout"):
       text "logout"
 
-proc initViewHeader*() =
+proc initUserDisplay*() =
   # Get the user info
   proc userInfoUpdate(httpStatus: int, response: cstring) =
     if httpStatus == 200:
       let responseJson = parseJson($response)
       let username = (cstring)responseJson["username"].getStr()
       document.getElementById(welcomeId).innerHTML = "Welcome " & username
-  ajaxGet("/api/v1/userinfo", @[], userInfoUpdate)
+  ajaxGet("/api/v1/username", @[], userInfoUpdate)

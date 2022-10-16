@@ -11,7 +11,7 @@ import std / [
 import jester
 
 # Internal
-import dndtracker / [ database, databaseinitializer ]
+import dndtracker / [ consts, database, databaseinitializer ]
 import dndtracker / models / user
 
 # Setup the database
@@ -92,11 +92,23 @@ routes:
     setCookie("username", "", now().utc)
     redirect("/login")
 
-  get "/api/v1/userinfo":
+  post "/api/v1/adduser":
     getSessionUser(request, user)
 
-    # Return the user information
-    let data = $(%*{"username": user.name})
+    # Verify that the request came from an admin
+    if not AdminRole in getUserRolesInt(user):
+      let data = $(%*{"status": "failed"})
+      resp Http403, data, "application/json"
+
+    # Add the user
+    let bodyJson = parseJson(request.body)
+    let username = bodyJson["username"].getStr()
+    let password = bodyJson["password"].getStr()
+    let email = ""
+    addUser(username, password, email)
+
+    # Return the status
+    let data = $(%*{"status": "success"})
     resp data, "application/json"
 
   post "/api/v1/changepassword":
@@ -111,4 +123,19 @@ routes:
     else:
       let data = $(%*{"status": "success"})
       resp data, "application/json"
+
+  get "/api/v1/userinfo":
+    getSessionUser(request, user)
+
+    # Return the user information
+    let userRoles = getUserRolesInt(user)
+    let data = $(%*{"username": user.name, "roles": userRoles})
+    resp data, "application/json"
+
+  get "/api/v1/username":
+    getSessionUser(request, user)
+
+    # Return the username
+    let data = $(%*{"username": user.name})
+    resp data, "application/json"
 
