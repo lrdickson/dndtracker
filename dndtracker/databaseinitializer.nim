@@ -2,7 +2,7 @@ import norm / sqlite
 
 import consts
 import database
-import models / user
+import models / [ character, user ]
 
 proc prepareDatabase*(dbNeedsInitialized: bool) =
   var db = getDatabase()
@@ -10,15 +10,14 @@ proc prepareDatabase*(dbNeedsInitialized: bool) =
   # Initialize the database if it hasn't been
   echo("Database needs initialized: " & $dbNeedsInitialized)
   if dbNeedsInitialized:
-      # Create the user table
+      # Create the tables
       db.createTables(newUser())
+      db.createTables(newUserRole())
+      db.createTables(newSession())
+      db.createTables(newCharacter())
+
+      # Add the admin user
       var admin = newUser("admin", "admin", "")
       db.insert(admin)
-
-      # Create the user role table
-      db.createTables(newUserRole())
       var adminRole = newUserRole(admin, AdminRole)
       db.insert(adminRole)
-
-      # Create the session table
-      db.createTables(newSession())

@@ -12,7 +12,7 @@ import jester
 
 # Internal
 import dndtracker / [ consts, database, databaseinitializer ]
-import dndtracker / models / user
+import dndtracker / models / [character, user]
 
 # Setup the database
 let dbNeedsInitialized = not fileExists(DB_FILEPATH)
@@ -91,6 +91,14 @@ routes:
     setCookie("session", "", now().utc)
     setCookie("username", "", now().utc)
     redirect("/login")
+
+  get "/api/v1/addcharacter":
+    getSessionUser(request, user)
+    addCharacter(user)
+
+    # Return the status
+    let data = $(%*{"status": "success"})
+    resp data, "application/json"
 
   post "/api/v1/adduser":
     getSessionUser(request, user)

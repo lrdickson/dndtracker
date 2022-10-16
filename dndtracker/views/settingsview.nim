@@ -1,5 +1,4 @@
 import std / json
-import jsffi except `&`
 
 include karax / prelude
 import karax / [kajax, kdom, vstyles]
