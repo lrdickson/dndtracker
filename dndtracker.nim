@@ -12,7 +12,7 @@ import jester
 
 # Internal
 import dndtracker / [ consts, database, databaseinitializer ]
-import dndtracker / models / [character, user]
+import dndtracker / models / [campaign, user]
 
 # Setup the database
 let dbNeedsInitialized = not fileExists(DB_FILEPATH)
