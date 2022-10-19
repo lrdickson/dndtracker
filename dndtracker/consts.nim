@@ -1,3 +1,6 @@
 
 # User Role Consts
-const AdminRole* = 1
+type
+  UserRoleType* = enum
+    None = 0
+    Admin = 1

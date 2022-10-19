@@ -23,5 +23,5 @@ proc prepareDatabase*(dbNeedsInitialized: bool) =
       # Add the admin user
       var admin = newUser("admin", "admin", "")
       db.insert(admin)
-      var adminRole = newUserRole(admin, AdminRole)
+      var adminRole = newUserRole(admin, ord(UserRoleType.Admin))
       db.insert(adminRole)

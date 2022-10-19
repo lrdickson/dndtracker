@@ -13,18 +13,24 @@ type
     wisdom*: int
     charisma*: int
 
+  Feature* = ref object of Model
+    name*: string
+    description*: string
+    logic*: string # Pseudocode?
+
   Language* = ref object of Model
     name*: string
     description*: string
 
+  Proficiency* = ref object of Model
+    name*: string
+    description*: string
+    kind*: int
+    abilityKind*: int
+
   Sense* = ref object of Model
     name*: string
     description*: string
-
-  Skill* = ref object of Model
-    name*: string
-    description*: string
-    abilityKind*: int
 
   Speed* = ref object of Model
     walk*: int
@@ -33,6 +39,18 @@ type
     fly*: int
     burrow*: int
 
+  Spell* = ref object of Model
+    name*: string
+    level*: int
+    school*: int
+    castingTime*: int
+    distance*: int
+    verbal*: bool
+    somatic*: bool
+    material*: string
+    duration*: int
+    description*: string
+
 # =================== Background =========== #
 
 type
@@ -40,13 +58,42 @@ type
     name*: string
     description*: string
 
+  BackgroundFeature* = ref object of Model
+    background*: Background
+    kind*: Feature
+
   BackgroundLanguage* = ref object of Model
     background*: Background
     kind*: Language
 
-  BackgroundSkill* = ref object of Model
+  BackgroundProficiency* = ref object of Model
     background*: Background
-    kind*: Skill
+    kind*: Proficiency
+
+# =================== Class =========== #
+
+type
+  Class* = ref object of Model
+    name*: string
+    hitDice*: int
+
+  ClassFeature* = ref object of Model
+    class*: Class
+    kind*: Feature
+    level*: int
+
+  ClassProficiency* = ref object of Model
+    class*: Class
+    kind*: Proficiency
+
+  SubClass* = ref object of Model
+    name*: string
+    class*: Class
+
+  SubClassFeature* = ref object of Model
+    subClass*: SubClass
+    kind*: Feature
+    level*: int
 
 # =================== Race =========== #
 
@@ -57,17 +104,44 @@ type
     speed*: Speed
     abilityScore*: AbilityScore
 
+  RaceFeature* = ref object of Model
+    race*: Race
+    kind*: Feature
+
   RaceLanguage* = ref object of Model
     race*: Race
     kind*: Language
 
-  RaceSkill* = ref object of Model
+  RaceProficiency* = ref object of Model
     race*: Race
-    kind*: Skill
-    bonusMutliplier*: float
+    kind*: Proficiency
 
   RaceSense* = ref object of Model
     race*: Race
+    kind*: Sense
+    distance*: int
+
+  SubRace* = ref object of Model
+    name*: string
+    race*: Race
+    description*: string
+    speed*: Speed
+    abilityScore*: AbilityScore
+
+  SubRaceFeature* = ref object of Model
+    subRace*: SubRace
+    kind*: Feature
+
+  SubRaceLanguage* = ref object of Model
+    subRace*: SubRace
+    kind*: Language
+
+  SubRaceProficiency* = ref object of Model
+    subRace*: SubRace
+    kind*: Proficiency
+
+  SubRaceSense* = ref object of Model
+    subRace*: SubRace
     kind*: Sense
     distance*: int
 
@@ -78,7 +152,7 @@ type
     lawful*: int
     good*: int
     armorClass*: int
-    hitPoints*: int
+    maxHitPoints*: int
     speed*: Speed
     abilityScore*: AbilityScore
 
@@ -99,18 +173,28 @@ type
     name*: string
     background*: Background
     race*: Race
+    subRace*: SubRace
     experiencePoints*: int
+    inspiration*: bool
     proficiencyBonus*: int
+    initiative*: int
+    currentHitPoints*: int
+    temporaryHitPoints*: int
     statBlock*: StatBlock
     notes*: string
 
-  CharacterSkill* = ref object of Model
+  CharacterClass* = ref object of Model
     character*: Character
-    kind*: Skill
-    bonusMutliplier*: float
+    kind*: Class
+    subKind*: SubClass
+    level*: int
 
-  CharacterSavingThrow* = ref object of Model
+  CharacterFeature* = ref object of Model
     character*: Character
-    kind*: int
-    bonusMultiplier*: float
+    kind*: Feature
+
+  CharacterProficiency* = ref object of Model
+    character*: Character
+    kind*: Proficiency
+    bonusMutliplier*: float
 

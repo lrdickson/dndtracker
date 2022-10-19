@@ -104,7 +104,7 @@ routes:
     getSessionUser(request, user)
 
     # Verify that the request came from an admin
-    if not AdminRole in getUserRolesInt(user):
+    if not ord(UserRoleType.Admin) in getUserRolesInt(user):
       let data = $(%*{"status": "failed"})
       resp Http403, data, "application/json"
 
