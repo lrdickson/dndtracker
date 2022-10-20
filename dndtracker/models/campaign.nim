@@ -198,3 +198,13 @@ type
     kind*: Proficiency
     bonusMutliplier*: float
 
+proc newCharacter*(user: User): Character =
+  Character(user: user)
+
+proc newCharacter*: Character =
+  newCharacter(newUser())
+
+proc addCharacter*(user: User) =
+  let db = getDatabase()
+  var character = newCharacter(user)
+  db.insert(character)
