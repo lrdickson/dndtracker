@@ -4,6 +4,8 @@ import user
 
 import ../database
 
+const KIND_NONE* = 0
+
 type
   AbilityScore* = ref object of Model
     strength*: int
@@ -12,32 +14,6 @@ type
     intelligence*: int
     wisdom*: int
     charisma*: int
-
-  Feature* = ref object of Model
-    name*: string
-    description*: string
-    logic*: string # Pseudocode?
-
-  Language* = ref object of Model
-    name*: string
-    description*: string
-
-  Proficiency* = ref object of Model
-    name*: string
-    description*: string
-    kind*: int
-    abilityKind*: int
-
-  Sense* = ref object of Model
-    name*: string
-    description*: string
-
-  Speed* = ref object of Model
-    walk*: int
-    swim*: int
-    climb*: int
-    fly*: int
-    burrow*: int
 
   Spell* = ref object of Model
     name*: string
@@ -51,6 +27,46 @@ type
     duration*: int
     description*: string
 
+# =================== Feature =========== #
+
+type
+  FeatureKind* = enum
+    featureOther = 1,
+    speed,
+    armorProf,
+    weaponProf,
+    toolProf,
+    savingThrowProf,
+    skillProf,
+    damageResistance,
+    damageImmunity,
+    conditionImmunity,
+    sense,
+    language,
+    action,
+
+  AbilityScoreKind* = enum
+    strength = 1,
+    dexterity,
+    constitution,
+    intelligence,
+    wisdom,
+    charisma
+
+  SpeedKind* = enum
+    walk = 1,
+    burrow,
+    climb,
+    fly,
+    swim,
+
+  Feature* = ref object of Model
+    name*: string
+    description*: string
+    kind*: int
+    subKind*: int
+    value*: string # json
+
 # =================== Background =========== #
 
 type
@@ -60,15 +76,7 @@ type
 
   BackgroundFeature* = ref object of Model
     background*: Background
-    kind*: Feature
-
-  BackgroundLanguage* = ref object of Model
-    background*: Background
-    kind*: Language
-
-  BackgroundProficiency* = ref object of Model
-    background*: Background
-    kind*: Proficiency
+    feature*: Feature
 
 # =================== Class =========== #
 
@@ -79,12 +87,8 @@ type
 
   ClassFeature* = ref object of Model
     class*: Class
-    kind*: Feature
+    feature*: Feature
     level*: int
-
-  ClassProficiency* = ref object of Model
-    class*: Class
-    kind*: Proficiency
 
   SubClass* = ref object of Model
     name*: string
@@ -92,7 +96,7 @@ type
 
   SubClassFeature* = ref object of Model
     subClass*: SubClass
-    kind*: Feature
+    feature*: Feature
     level*: int
 
 # =================== Race =========== #
@@ -101,49 +105,21 @@ type
   Race* = ref object of Model
     name*: string
     description*: string
-    speed*: Speed
     abilityScore*: AbilityScore
 
   RaceFeature* = ref object of Model
     race*: Race
-    kind*: Feature
-
-  RaceLanguage* = ref object of Model
-    race*: Race
-    kind*: Language
-
-  RaceProficiency* = ref object of Model
-    race*: Race
-    kind*: Proficiency
-
-  RaceSense* = ref object of Model
-    race*: Race
-    kind*: Sense
-    distance*: int
+    feature*: Feature
 
   SubRace* = ref object of Model
     name*: string
     race*: Race
     description*: string
-    speed*: Speed
     abilityScore*: AbilityScore
 
   SubRaceFeature* = ref object of Model
     subRace*: SubRace
-    kind*: Feature
-
-  SubRaceLanguage* = ref object of Model
-    subRace*: SubRace
-    kind*: Language
-
-  SubRaceProficiency* = ref object of Model
-    subRace*: SubRace
-    kind*: Proficiency
-
-  SubRaceSense* = ref object of Model
-    subRace*: SubRace
-    kind*: Sense
-    distance*: int
+    feature*: Feature
 
 # =================== StatBlock =========== #
 
@@ -153,17 +129,11 @@ type
     good*: int
     armorClass*: int
     maxHitPoints*: int
-    speed*: Speed
     abilityScore*: AbilityScore
 
-  StatBlockLanguage* = ref object of Model
+  StatBlockFeature* = ref object of Model
     statBlock*: StatBlock
-    kind*: Language
-
-  StatBlockSense* = ref object of Model
-    statBlock*: StatBlock
-    kind*: Sense
-    distance*: int
+    feature*: Feature
 
 # =================== Character =========== #
 
@@ -185,18 +155,9 @@ type
 
   CharacterClass* = ref object of Model
     character*: Character
-    kind*: Class
-    subKind*: SubClass
+    class*: Class
+    subClass*: SubClass
     level*: int
-
-  CharacterFeature* = ref object of Model
-    character*: Character
-    kind*: Feature
-
-  CharacterProficiency* = ref object of Model
-    character*: Character
-    kind*: Proficiency
-    bonusMutliplier*: float
 
 proc newCharacter*(user: User): Character =
   Character(user: user)
