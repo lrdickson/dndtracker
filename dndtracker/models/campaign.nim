@@ -27,6 +27,22 @@ type
     duration*: int
     description*: string
 
+# =================== Item =========== #
+
+  ItemKind* = enum
+    itemOther = 1,
+    armor,
+    weapon,
+    tool,
+
+  Item* = ref object of Model
+    name*: string
+    description*: string
+    kind*: int
+    cost*: int
+    weight*: int
+    data*: string # json
+
 # =================== Feature =========== #
 
 type
@@ -65,7 +81,7 @@ type
     description*: string
     kind*: int
     subKind*: int
-    value*: string # json
+    data*: string # json
 
 # =================== Background =========== #
 
@@ -77,63 +93,60 @@ type
   BackgroundFeature* = ref object of Model
     background*: Background
     feature*: Feature
+    maxUses*: int
+    recoveryInterval*: int
 
 # =================== Class =========== #
 
 type
+  ParentClass* = ref object of Model
+    name*: string
+    description*: string
+
+  ParentClassFeature* = ref object of Model
+    parentClass*: ParentClass
+    feature*: Feature
+    level*: int
+    maxUses*: int
+    recoveryInterval*: int
+
   Class* = ref object of Model
     name*: string
+    description*: string
+    parentClass*: ParentClass
     hitDice*: int
 
   ClassFeature* = ref object of Model
     class*: Class
     feature*: Feature
     level*: int
-
-  SubClass* = ref object of Model
-    name*: string
-    class*: Class
-
-  SubClassFeature* = ref object of Model
-    subClass*: SubClass
-    feature*: Feature
-    level*: int
+    maxUses*: int
+    recoveryInterval*: int
 
 # =================== Race =========== #
 
 type
+  ParentRace* = ref object of Model
+    name*: string
+    description*: string
+    abilityScore*: AbilityScore
+
+  ParentRaceFeature* = ref object of Model
+    feature*: Feature
+    maxUses*: int
+    recoveryInterval*: int
+
   Race* = ref object of Model
     name*: string
     description*: string
+    parentRace*: ParentRace
     abilityScore*: AbilityScore
 
   RaceFeature* = ref object of Model
     race*: Race
     feature*: Feature
-
-  SubRace* = ref object of Model
-    name*: string
-    race*: Race
-    description*: string
-    abilityScore*: AbilityScore
-
-  SubRaceFeature* = ref object of Model
-    subRace*: SubRace
-    feature*: Feature
-
-# =================== StatBlock =========== #
-
-type
-  StatBlock* = ref object of Model
-    lawful*: int
-    good*: int
-    armorClass*: int
-    maxHitPoints*: int
-    abilityScore*: AbilityScore
-
-  StatBlockFeature* = ref object of Model
-    statBlock*: StatBlock
-    feature*: Feature
+    maxUses*: int
+    recoveryInterval*: int
 
 # =================== Character =========== #
 
@@ -143,21 +156,36 @@ type
     name*: string
     background*: Background
     race*: Race
-    subRace*: SubRace
+    lawful*: int
+    good*: int
     experiencePoints*: int
+    abilityScore*: AbilityScore
     inspiration*: bool
     proficiencyBonus*: int
+    armorClass*: int
     initiative*: int
+    maxHitPoints*: int
     currentHitPoints*: int
     temporaryHitPoints*: int
-    statBlock*: StatBlock
-    notes*: string
+    backstory*: string
+    data*: string # json
 
   CharacterClass* = ref object of Model
     character*: Character
     class*: Class
-    subClass*: SubClass
     level*: int
+
+  CharacterFeature* = ref object of Model
+    character*: Character
+    feature*: Feature
+    maxUses*: int
+    recoveryInterval*: int
+
+  CharacterItem* = ref object of Model
+    character*: Character
+    item*: Item
+    quantity*: int
+    data*: string # json
 
 proc newCharacter*(user: User): Character =
   Character(user: user)
