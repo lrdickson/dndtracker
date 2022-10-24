@@ -6,14 +6,11 @@ import ../database
 
 const KIND_NONE* = 0
 
+# =================== Spell =========== #
+
 type
-  AbilityScore* = ref object of Model
-    strength*: int
-    dexterity*: int
-    constitution*: int
-    intelligence*: int
-    wisdom*: int
-    charisma*: int
+  SpellSchoolKind* = enum
+    conjuration = 1
 
   Spell* = ref object of Model
     name*: string
@@ -76,77 +73,71 @@ type
     fly,
     swim,
 
+  RecoveryKind* = enum
+    recoveryOther = 1,
+    action,
+    shortRest,
+    longRest,
+
   Feature* = ref object of Model
     name*: string
     description*: string
     kind*: int
     subKind*: int
+    recovery*: int
     data*: string # json
 
-# =================== Background =========== #
+# =================== Group =========== #
 
-type
-  Background* = ref object of Model
+  GroupKind* = enum
+    groupOther* = 1,
+    background,
+    race,
+    subRace,
+    class,
+    subClass,
+    feat,
+
+  Group* = ref object of Model
     name*: string
     description*: string
+    kind*: int
+    optionGroup*: OptionGroup
 
-  BackgroundFeature* = ref object of Model
-    background*: Background
-    feature*: Feature
-    maxUses*: int
-    recoveryInterval*: int
-
-# =================== Class =========== #
-
-type
-  ParentClass* = ref object of Model
+  OptionGroup* = ref object of Model
     name*: string
     description*: string
+    group*: Group
 
-  ParentClassFeature* = ref object of Model
-    parentClass*: ParentClass
-    feature*: Feature
-    level*: int
-    maxUses*: int
-    recoveryInterval*: int
-
-  Class* = ref object of Model
-    name*: string
-    description*: string
-    parentClass*: ParentClass
-    hitDice*: int
-
-  ClassFeature* = ref object of Model
-    class*: Class
+  GroupFeature* = ref object of Model
+    group*: Group
     feature*: Feature
     level*: int
-    maxUses*: int
-    recoveryInterval*: int
+    data*: string # json
 
-# =================== Race =========== #
+# =================== StatBlock =========== #
 
 type
-  ParentRace* = ref object of Model
-    name*: string
-    description*: string
-    abilityScore*: AbilityScore
+  SizeKind* = enum
+    tiny = 1,
+    small,
+    medium,
+    large,
+    huge,
 
-  ParentRaceFeature* = ref object of Model
-    feature*: Feature
-    maxUses*: int
-    recoveryInterval*: int
-
-  Race* = ref object of Model
-    name*: string
-    description*: string
-    parentRace*: ParentRace
-    abilityScore*: AbilityScore
-
-  RaceFeature* = ref object of Model
-    race*: Race
-    feature*: Feature
-    maxUses*: int
-    recoveryInterval*: int
+  StatBlock* = ref object of Model
+    size*: int
+    lawful*: int
+    good*: int
+    armorClass*: int
+    strength*: int
+    dexterity*: int
+    constitution*: int
+    intelligence*: int
+    wisdom*: int
+    charisma*: int
+    proficiencyBonus*: int
+    data*: string # json
 
 # =================== Character =========== #
 
@@ -154,32 +145,40 @@ type
   Character* = ref object of Model
     user*: User
     name*: string
+    statBlock*: StatBlock
     background*: Background
-    race*: Race
-    lawful*: int
-    good*: int
     experiencePoints*: int
-    abilityScore*: AbilityScore
     inspiration*: bool
-    proficiencyBonus*: int
-    armorClass*: int
     initiative*: int
     maxHitPoints*: int
     currentHitPoints*: int
     temporaryHitPoints*: int
+    exhaustion*: int
     backstory*: string
     data*: string # json
 
-  CharacterClass* = ref object of Model
+  CharacterGroup* = ref object of Model
     character*: Character
-    class*: Class
+    group*: Group
     level*: int
 
   CharacterFeature* = ref object of Model
     character*: Character
+    group*: Group
     feature*: Feature
     maxUses*: int
-    recoveryInterval*: int
+    remainUses*: int
+    data*: string
+
+  PreparedSpell* = ref object of Model
+    character*: Character
+    feature*: Feature
+    spell*: Spell
+
+  AvailableSpell* = ref object of Model
+    character*: Character
+    feature*: Feature
+    spell*: Spell
 
   CharacterItem* = ref object of Model
     character*: Character
