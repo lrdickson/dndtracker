@@ -10,7 +10,14 @@ const KIND_NONE* = 0
 
 type
   SpellSchoolKind* = enum
-    conjuration = 1
+    abjuration = 1,
+    conjuration,
+    divination,
+    enchantment,
+    evocation,
+    illusion,
+    necromancy,
+    transmutation,
 
   Spell* = ref object of Model
     name*: string
@@ -57,6 +64,8 @@ type
     sense,
     language,
     action,
+    bonusAction,
+    reaction,
 
   AbilityScoreKind* = enum
     strength = 1,
@@ -75,7 +84,7 @@ type
 
   RecoveryKind* = enum
     recoveryOther = 1,
-    action,
+    turn,
     shortRest,
     longRest,
 
@@ -90,7 +99,7 @@ type
 # =================== Group =========== #
 
   GroupKind* = enum
-    groupOther* = 1,
+    groupOther = 1,
     background,
     race,
     subRace,
@@ -103,11 +112,21 @@ type
     description*: string
     kind*: int
     optionGroup*: OptionGroup
+    data*: string # json
+
+  OptionGroupKind* = enum
+    optionGroupOther = 1,
+    exclusive,
+    levelExclusive,
+    levelAggregate,
 
   OptionGroup* = ref object of Model
     name*: string
     description*: string
     group*: Group
+    kind*: int
+    level*: int
+    data*: string # json
 
   GroupFeature* = ref object of Model
     group*: Group
@@ -146,7 +165,6 @@ type
     user*: User
     name*: string
     statBlock*: StatBlock
-    background*: Background
     experiencePoints*: int
     inspiration*: bool
     initiative*: int
