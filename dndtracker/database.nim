@@ -1,4 +1,4 @@
-import norm / sqlite
+import db_backend
 
 var db: DbConn
 const DB_FILEPATH* = "dnd.db"

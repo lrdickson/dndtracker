@@ -1,7 +1,6 @@
-import norm / sqlite
-
 import consts
 import database
+import db_backend
 import models / [ campaign, misc, user ]
 
 proc prepareDatabase*(dbNeedsInitialized: bool) =

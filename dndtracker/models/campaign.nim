@@ -1,8 +1,9 @@
-import norm/[model, sqlite]
+import norm/model
 
 import user
 
 import ../database
+import ../db_backend
 
 const KIND_NONE* = 0
 

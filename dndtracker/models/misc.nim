@@ -1,6 +1,7 @@
-import norm/[model, sqlite]
+import norm/model
 
 import ../database
+import ../db_backend
 
 type
   AppInfo* = ref object of Model

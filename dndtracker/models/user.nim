@@ -7,9 +7,10 @@ randomize()
 import nimcrypto
 import nimcrypto/pbkdf2
 import std/[logging, options]
-import norm/[model, sqlite]
+import norm/model
 
 import ../database
+import ../db_backend
 
 # =================== User ============================== #
 type
