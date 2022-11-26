@@ -2,7 +2,6 @@ import norm/model
 
 import user
 
-import ../database
 import ../db_backend
 
 const KIND_NONE* = 0
@@ -212,6 +211,6 @@ proc newCharacter*: Character =
   newCharacter(newUser())
 
 proc addCharacter*(user: User) =
-  let db = getDatabase()
-  var character = newCharacter(user)
-  db.insert(character)
+  withDb:
+    var character = newCharacter(user)
+    db.insert(character)

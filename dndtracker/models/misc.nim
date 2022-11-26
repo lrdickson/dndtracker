@@ -1,6 +1,5 @@
 import norm/model
 
-import ../database
 import ../db_backend
 
 type
@@ -15,23 +14,23 @@ proc newAppInfo*: AppInfo =
   AppInfo(key: "", value: "")
 
 proc setAppInfo*(key, value: string) =
-  let db = getDatabase()
-  if db.exists(AppInfo, "key = ?", key):
-    var appInfo: AppInfo
-    db.select(appInfo, "AppInfo.key = ?", key)
-    appInfo.value = value
-    db.update(appInfo)
-  else:
-    var appInfo = newAppInfo(key, value)
-    db.insert(appInfo)
+  withDb:
+    if db.exists(AppInfo, "key = ?", key):
+      var appInfo: AppInfo
+      db.select(appInfo, "AppInfo.key = ?", key)
+      appInfo.value = value
+      db.update(appInfo)
+    else:
+      var appInfo = newAppInfo(key, value)
+      db.insert(appInfo)
 
 proc getAppInfo*(key: string): string =
   # Check if the key exists in the AppInfo table
-  let db = getDatabase()
-  if not db.exists(AppInfo, "key = ?", key): return ""
+  withDb:
+    if not db.exists(AppInfo, "key = ?", key): return ""
 
-  # Get the AppInfo value
-  var appInfo: AppInfo
-  db.select(appInfo, "key = ?", key)
-  return appInfo.value
+    # Get the AppInfo value
+    var appInfo: AppInfo
+    db.select(appInfo, "key = ?", key)
+    return appInfo.value
 

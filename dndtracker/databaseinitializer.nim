@@ -1,14 +1,12 @@
 import consts
-import database
 import db_backend
 import models / [ campaign, misc, user ]
 
 proc prepareDatabase*(dbNeedsInitialized: bool) =
-  var db = getDatabase()
-
   # Initialize the database if it hasn't been
   echo("Database needs initialized: " & $dbNeedsInitialized)
   if dbNeedsInitialized:
+    withDb:
       # Create the tables
       db.createTables(newAppInfo())
       db.createTables(newUser())

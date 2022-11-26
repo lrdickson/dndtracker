@@ -9,7 +9,6 @@ import nimcrypto/pbkdf2
 import std/[logging, options]
 import norm/model
 
-import ../database
 import ../db_backend
 
 # =================== User ============================== #
@@ -52,16 +51,16 @@ proc newUser*: User =
   newUser("", "", "")
 
 proc addUser*(username, password, email: string) =
-  let db = getDatabase()
-  var user = newUser(username, password, email)
-  db.insert(user)
+  withDb:
+    var user = newUser(username, password, email)
+    db.insert(user)
 
 proc checkPassword*(username, password: string): bool =
   # Get the user
-  let db = getDatabase()
-  if not db.exists(User, "name = ?", username): return false
   var user = newUser()
-  getDatabase().select(user, "User.name = ?", username)
+  withDb:
+    if not db.exists(User, "name = ?", username): return false
+    db.select(user, "User.name = ?", username)
 
   # Check if the password is correct
   let passwordHash = getPasswordHash(password, user.salt)
@@ -73,15 +72,16 @@ proc changePassword*(user:var User, password: string): bool =
   let passwordHash = getPasswordHash(password, newSalt)
   user.password = passwordHash
   user.salt = newSalt
-  getDatabase().update(user)
+  withDb:
+    db.update(user)
   return true
 
 proc changePassword*(username, password: string): bool =
   # Get the user
-  let db = getDatabase()
-  if not db.exists(User, "name = ?", username): return false
   var user = newUser()
-  getDatabase().select(user, "User.name = ?", username)
+  withDb:
+    if not db.exists(User, "name = ?", username): return false
+    db.select(user, "User.name = ?", username)
 
   # Change the password
   return changePassword(user, password)
@@ -100,8 +100,8 @@ proc newUserRole*: UserRole =
 
 proc getUserRoles*(user: User): seq[UserRole] =
   var roles = @[newUserRole()]
-  let db = getDatabase()
-  db.selectOneToMany(user, roles)
+  withDb:
+    db.selectOneToMany(user, roles)
   return roles
 
 proc getUserRolesInt*(user: User): seq[int] =
@@ -127,40 +127,41 @@ proc newSession*: Session =
 
 proc beginSession*(username, password: string): (string, DateTime)=
   # Get the user
-  let db = getDatabase()
-  if not db.exists(User, "name = ?", username): return ("", now().utc)
   var user = newUser()
-  getDatabase().select(user, "User.name = ?", username)
+  var session: Session
+  withDb:
+    if not db.exists(User, "name = ?", username): return ("", now().utc)
+    db.select(user, "User.name = ?", username)
 
-  # Check if the password is correct
-  let passwordHash = getPasswordHash(password, user.salt)
-  if passwordHash != user.password:
-    return ("", now().utc)
+    # Check if the password is correct
+    let passwordHash = getPasswordHash(password, user.salt)
+    if passwordHash != user.password:
+      return ("", now().utc)
 
-  # Add a session to the database
-  var session = newSession(user)
-  db.insert(session)
+    # Add a session to the database
+    session = newSession(user)
+    db.insert(session)
   return (session.identifier, session.expire)
 
 proc endSession*(sessionId: string) =
   # Check if the session is still in the database
-  let db = getDatabase()
-  if not db.exists(Session, "identifier = ?", sessionId):
-    return
+  withDb:
+    if not db.exists(Session, "identifier = ?", sessionId):
+      return
 
-  # Delete the session
-  var session = newSession()
-  db.select(session, "Session.identifier = ?", sessionId)
-  db.delete(session)
+    # Delete the session
+    var session = newSession()
+    db.select(session, "Session.identifier = ?", sessionId)
+    db.delete(session)
 
 proc getSession*(sessionId: string): (bool, Session) =
   # Check if the session is still in the database
-  let db = getDatabase()
-  if not db.exists(Session, "identifier = ?", sessionId):
-    return (false, newSession())
+  withDb:
+    if not db.exists(Session, "identifier = ?", sessionId):
+      return (false, newSession())
 
-  # Delete the session
-  var session = newSession()
-  db.select(session, "Session.identifier = ?", sessionId)
-  return (true, session)
+    # Delete the session
+    var session = newSession()
+    db.select(session, "Session.identifier = ?", sessionId)
+    return (true, session)
 
