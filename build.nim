@@ -23,4 +23,4 @@ for (kind, view) in walkDir("dndtracker/views"):
 
 # Compile the main server
 createDir "bin"
-discard execShellCmd "nim c --outdir:bin --dynlibOverride:sqlite3 --passL:\"sqlite3.c -lm -pthread\" dndtracker.nim"
+discard execShellCmd "nim c --outdir:bin --gc:orc --dynlibOverride:sqlite3 --passL:\"sqlite3.c -lm -pthread\" dndtracker.nim"

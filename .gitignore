@@ -2,3 +2,4 @@ tags
 **/*.js
 **/*.db
 bin/
+.env
