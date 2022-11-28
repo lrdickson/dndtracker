@@ -160,7 +160,7 @@ proc getSession*(sessionId: string): (bool, Session) =
     if not db.exists(Session, "identifier = ?", sessionId):
       return (false, newSession())
 
-    # Delete the session
+    # Return the session
     var session = newSession()
     db.select(session, "Session.identifier = ?", sessionId)
     return (true, session)

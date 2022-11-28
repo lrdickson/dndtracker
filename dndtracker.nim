@@ -33,8 +33,10 @@ proc createView(viewJs, pageTitle: string): string =
 proc createView(viewJs: string): string =
   return viewJs.createView("DND Tracker")
 
-proc homeView(ctx: Context) {.async.} =
-  resp createView(MAIN_VIEW_JS)
+proc sessionActive(ctx: Context): bool =
+  let sessionId = ctx.session.getOrDefault("sessionId", "")
+  let (sessionFound, session) = getSession(sessionId)
+  return sessionFound
 
 proc loginView(ctx: Context) {.async.} =
   resp createView(LOGIN_VIEW_JS, "Login")
@@ -48,8 +50,30 @@ proc loginPost(ctx: Context) {.async, gcsafe.} =
     resp "incorrect username or password"
 
   # Set the cookie to mark the user as logged in
+  ctx.session["sessionId"] = sessionId
   ctx.session["username"] = username
   resp redirect("/")
+
+proc logout(ctx: Context) {.async, gcsafe.} =
+  # End the session
+  endSession(ctx.session.getOrDefault("sessionId"))
+
+  # Clear the session
+  ctx.session["sessionId"] = ""
+  ctx.session["username"] = ""
+  resp redirect("/login")
+
+proc homeView(ctx: Context) {.async.} =
+  if not sessionActive(ctx):
+    resp redirect("/login")
+    return
+  resp createView(MAIN_VIEW_JS)
+
+proc settingsView(ctx: Context) {.async.} =
+  if not sessionActive(ctx):
+    resp redirect("/login")
+    return
+  resp createView(SETTINGS_VIEW_JS)
 
 when isMainModule:
   # Setup the database
@@ -71,8 +95,10 @@ when isMainModule:
   app.use(sessionMiddleware(settings))
 
   # Be careful with the routes.
+  app.addRoute("/login", loginView, HttpGet)
+  app.addRoute("/login", loginPost, HttpPost)
+  app.addRoute("/logout", logout)
   app.addRoute("/", homeView)
-  app.addRoute("/login", loginView)
-  app.addRoute("/api/v1/login", loginPost)
+  app.addRoute("/settings", settingsView)
   #app.addRoute(urls.urlPatterns, "")
   app.run()
