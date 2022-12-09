@@ -33,35 +33,37 @@ proc createView(viewJs, pageTitle: string): string =
 proc createView(viewJs: string): string =
   return viewJs.createView("DND Tracker")
 
-proc sessionActive(ctx: Context): bool =
-  let sessionId = ctx.session.getOrDefault("sessionId", "")
-  let (sessionFound, session) = getSession(sessionId)
-  return sessionFound
-
 proc loginView(ctx: Context) {.async.} =
   resp createView(LOGIN_VIEW_JS, "Login")
 
 proc loginPost(ctx: Context) {.async, gcsafe.} =
-  # Login the user
+  # Get the user
   let username = ctx.getFormParamsOption("username").get()
-  let password = ctx.getFormParamsOption("password").get()
-  var (sessionId, expire) = beginSession(username, password)
-  if sessionId == "":
+  let (user, userFound) = getUser(username)
+  if not userFound:
     resp "incorrect username or password"
 
-  # Set the cookie to mark the user as logged in
-  ctx.session["sessionId"] = sessionId
-  ctx.session["username"] = username
+  # Check the password
+  let password = ctx.getFormParamsOption("password").get()
+  if not user.passwordValid(password):
+    resp "incorrect username or password"
+
+  # Set the session
+  ctx.session["username"] = user.name
   resp redirect("/")
 
 proc logout(ctx: Context) {.async, gcsafe.} =
-  # End the session
-  endSession(ctx.session.getOrDefault("sessionId"))
-
   # Clear the session
-  ctx.session["sessionId"] = ""
   ctx.session["username"] = ""
   resp redirect("/login")
+
+proc getSessionUser(ctx: Context): (User, bool) =
+  let username = ctx.session.getOrDefault("username", "")
+  return getUser(username)
+
+proc sessionActive(ctx: Context): bool =
+  let (user, userFound) = ctx.getSessionUser()
+  return userFound
 
 proc homeView(ctx: Context) {.async.} =
   if not sessionActive(ctx):
@@ -74,6 +76,20 @@ proc settingsView(ctx: Context) {.async.} =
     resp redirect("/login")
     return
   resp createView(SETTINGS_VIEW_JS)
+
+proc addCharacterApi(ctx: Context) {.async, gcsafe.} =
+  # Get the session
+  let (user, userFound) = ctx.getSessionUser()
+  if not userFound:
+    resp abort()
+    return
+
+  # Add a new character to the user
+  addCharacter(user)
+
+  # Return the status
+  let data = %*{"status": "success"}
+  resp jsonResponse(data)
 
 when isMainModule:
   # Setup the database
@@ -92,7 +108,8 @@ when isMainModule:
       )
 
   var app = newApp(settings = settings)
-  app.use(sessionMiddleware(settings))
+  let sessionName = "dndtracker"
+  app.use(sessionMiddleware(settings, sessionName))
 
   # Be careful with the routes.
   app.addRoute("/login", loginView, HttpGet)
@@ -100,5 +117,6 @@ when isMainModule:
   app.addRoute("/logout", logout)
   app.addRoute("/", homeView)
   app.addRoute("/settings", settingsView)
+  app.addRoute("/api/v1/addcharacter", addCharacterApi)
   #app.addRoute(urls.urlPatterns, "")
   app.run()

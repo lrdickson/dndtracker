@@ -55,13 +55,15 @@ proc addUser*(username, password, email: string) =
     var user = newUser(username, password, email)
     db.insert(user)
 
-proc checkPassword*(username, password: string): bool =
+proc getUser*(username: string): (User, bool) =
   # Get the user
   var user = newUser()
   withDb:
-    if not db.exists(User, "name = ?", username): return false
+    if not db.exists(User, "name = ?", username): return (newUser(), false)
     db.select(user, "User.name = ?", username)
+  return (user, true)
 
+proc passwordValid*(user: User, password: string): bool =
   # Check if the password is correct
   let passwordHash = getPasswordHash(password, user.salt)
   return passwordHash == user.password
