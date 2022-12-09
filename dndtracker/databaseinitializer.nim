@@ -11,7 +11,6 @@ proc prepareDatabase*(dbNeedsInitialized: bool) =
       db.createTables(newAppInfo())
       db.createTables(newUser())
       db.createTables(newUserRole())
-      db.createTables(newSession())
       db.createTables(newCharacter())
 
       # Set the database version
