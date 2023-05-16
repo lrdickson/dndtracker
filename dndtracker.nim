@@ -57,14 +57,6 @@ proc logout(ctx: Context) {.async, gcsafe.} =
   ctx.session["username"] = ""
   resp redirect("/login")
 
-proc getSessionUser(ctx: Context): (User, bool) =
-  let username = ctx.session.getOrDefault("username", "")
-  return getUser(username)
-
-proc sessionActive(ctx: Context): bool =
-  let (user, userFound) = ctx.getSessionUser()
-  return userFound
-
 proc homeView(ctx: Context) {.async.} =
   if not sessionActive(ctx):
     resp redirect("/login")
